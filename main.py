@@ -1,48 +1,72 @@
+import os
 import sys
-import copy
+import warnings
 import scipy.io.wavfile
-import scipy.signal as sig
-import numpy as np
-import matplotlib.pyplot as plt
-from pylab import stem
-from pylab import fft
 
-testing_frequency = 140
+from copy import deepcopy
+from numpy import shape, mean, argmax
+from random import choice
+
+from numpy.fft import rfft
+from scipy.signal import decimate
+
+if not sys.warnoptions:
+    warnings.simplefilter("ignore")
 
 
-def main(file):
-    w, signal = scipy.io.wavfile.read(file)
-    if len(np.shape(signal)) == 2:
-        signal = [s[0] for s in signal]
+def main(file_path):
+    frequency, signal = scipy.io.wavfile.read(file_path)
+    full_time = len(signal) / frequency
 
-    part = len(signal) / 5
-    signal = signal[int(part):int(2*part)]
-    spec = abs(fft(signal))
-    clear_spectrum = copy.copy(spec)
+    if len(shape(signal)) == 2:
+        signal = [mean(s) for s in signal]
+
+    part = int(len(signal) / 5)
+    signal = signal[2 * part:3 * part]
+    cut_time = full_time * 1 / 5
+
+    spec = abs(rfft(signal))
+    clean_spec = deepcopy(spec)
+
     for i in range(2, 6):
-        dec_spec = sig.decimate(clear_spectrum, i)
-        spec[:len(dec_spec)] *= dec_spec
-    # fig = plt.figure(figsize=(15, 15), dpi=80)
-    # ax = fig.add_subplot(111)
-    #
-    # freqs = range(int(len(spec)))
-    #
-    # ax.set_yscale('log')
-    # stem(freqs, spec, '-.')
-    # ax.set_xlabel('Frequency [Hz]')
-    # ax.set_ylabel('Amplitude [j]')
-    # plt.show()
-    peak = np.argmax(spec)
-    if peak > testing_frequency:
-        print("K")
-        return 0
+        dec_spec = decimate(clean_spec, i)
+        spec[:len(dec_spec)] += deepcopy(dec_spec)
+
+    peak = (20 + argmax(spec[20:])) / cut_time
+    if peak > 170:
+        return "K"
     else:
-        print("M")
-        return 1
+        return "M"
 
 
-if __name__ == '__main__':
-    if len(sys.argv) == 2:
-        main(sys.argv[1])
-    else:
-        print("give the path")
+Md, Mz, Kd, Kz = 0, 0, 0, 0
+files = os.listdir("data/train/")
+files = files[1:]
+
+for file in files:
+    try:
+        test = main("data/train/" + file)
+
+    except:
+        test = choice(['M', 'K'])
+
+    shouldBe = file[4]
+    if shouldBe == 'M':
+        if test == 'M':
+            Md += 1
+        else:
+            Mz += 1
+    if shouldBe == 'K':
+        if test == 'K':
+            Kd += 1
+        else:
+            Kz += 1
+
+print(Md, Mz, Kd, Kz)
+print((Md + Kd) / (Md + Mz + Kd + Kz))
+
+# if __name__ == '__main__':
+#     try:
+#         print(main(sys.argv[1]))
+#     except:
+#         print(choice(['M', 'K']))
