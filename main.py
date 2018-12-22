@@ -8,6 +8,7 @@ from numpy import shape, mean, argmax
 from random import choice
 
 from numpy.fft import rfft
+from numpy.ma import multiply
 from scipy.signal import decimate
 
 if not sys.warnoptions:
@@ -30,16 +31,16 @@ def main(file_path):
 
     for i in range(2, 6):
         dec_spec = decimate(clean_spec, i)
-        spec[:len(dec_spec)] += deepcopy(dec_spec)
+        spec = multiply(spec[:len(dec_spec)], dec_spec)
 
-    peak = (20 + argmax(spec[20:])) / cut_time
+    peak = (35 + argmax(spec[35:])) / cut_time
     if peak > 170:
         return "K"
     else:
         return "M"
 
 
-Md, Mz, Kd, Kz = 0, 0, 0, 0
+Md, M, Kd, K = 0, 0, 0, 0
 files = os.listdir("data/train/")
 files = files[1:]
 
@@ -52,18 +53,16 @@ for file in files:
 
     shouldBe = file[4]
     if shouldBe == 'M':
+        M += 1
         if test == 'M':
             Md += 1
-        else:
-            Mz += 1
     if shouldBe == 'K':
+        K += 1
         if test == 'K':
             Kd += 1
-        else:
-            Kz += 1
 
-print(Md, Mz, Kd, Kz)
-print((Md + Kd) / (Md + Mz + Kd + Kz))
+print(Md, M, Kd, K)
+print((Md + Kd) / (M + K))
 
 # if __name__ == '__main__':
 #     try:
