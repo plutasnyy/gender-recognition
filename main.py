@@ -1,4 +1,3 @@
-import os
 import sys
 import warnings
 import scipy.io.wavfile
@@ -39,30 +38,6 @@ def main(file_path):
     else:
         return "M"
 
-
-# Md, M, Kd, K = 0, 0, 0, 0
-# files = os.listdir("data/train/")
-# files = files[1:]
-#
-# for file in files:
-#     try:
-#         test = main("data/train/" + file)
-#
-#     except:
-#         test = choice(['M', 'K'])
-#
-#     shouldBe = file[4]
-#     if shouldBe == 'M':
-#         M += 1
-#         if test == 'M':
-#             Md += 1
-#     if shouldBe == 'K':
-#         K += 1
-#         if test == 'K':
-#             Kd += 1
-#
-# print(Md, M, Kd, K)
-# print((Md + Kd) / (M + K))
 
 if __name__ == '__main__':
     try:
