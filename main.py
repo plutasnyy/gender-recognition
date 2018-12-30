@@ -23,7 +23,7 @@ def main(file_path):
 
     part = int(len(signal) / 5)
     signal = signal[2 * part:3 * part]
-    cut_time = full_time * 1 / 5
+    cut_time = full_time / 5
 
     spec = abs(rfft(signal))
     clean_spec = deepcopy(spec)
